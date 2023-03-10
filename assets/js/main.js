@@ -175,7 +175,13 @@ mySearchButton.addEventListener('click', () => {
         .then((data) => {
             myApp.innerHTML = ''
             data.data.map((character) => {
-                myApp.innerHTML += `<figure class="characterFigure" id="${character._id}"><h2>${character.name}</h2><img src="${character.imageUrl}"></figure>`
+                let characterFigure = document.createElement('figure')
+                characterFigure.innerHTML = `<h2>${character.name}</h2><img src="${character.imageUrl}">`
+                myApp.appendChild(characterFigure)
+
+                characterFigure.addEventListener('click', () => {
+                    showCharacterPage(character._id, 'showAll')
+                })
             })
         })
         .catch((error) => {
