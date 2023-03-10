@@ -1,60 +1,110 @@
 
 
 let myApp = document.getElementById('myApp')
+let myPage = 1
 
 loadingScreen()
-showCharacterPage()
+showCharacterPage(4703)
 
 function loadingScreen() {
     myApp.innerHTML = "Loading..."
 };
 
-function showCharacterPage() {
-    fetch("https://api.disneyapi.dev/characters/4703")
+
+
+
+
+
+
+function showCharacterPage(characterId, sender) {
+    fetch(`https://api.disneyapi.dev/characters/${characterId}`)
         .then((response) => { return response.json() })
-        .then((data) => {
+        .then((character) => {
 
-            let films = ""
-            data.films.map((film) => {
-                films += `${film}, `
-            })
-
-            myApp.innerHTML = `<h2>${data.name}</h2><img src="${data.imageUrl}"><h2>Films</h2><p>${films}</p>`
+            if (character.films.length > 0 && character.tvShows.length > 0) {
+                myApp.innerHTML = `<h2>${character.name}</h2><img src="${character.imageUrl}"><h2>Films:</h2><p>${character.films}</p><h2>TV shows:</h2><p>${character.tvShows}</p>`
+            } else if (character.films.length > 0) {
+                myApp.innerHTML = `<h2>${character.name}</h2><img src="${character.imageUrl}"><h2>Films:</h2><p>${character.films}</p>`
+            } else if (character.tvShows.length > 0) {
+                myApp.innerHTML = `<h2>${character.name}</h2><img src="${character.imageUrl}"><h2>TV shows:</h2><p>${character.tvShows}</p>`
+            }
+            else {
+                myApp.innerHTML = `<h2>${character.name}</h2><img src="${character.imageUrl}">`
+            }
+            switch (sender) {
+                case 'showAll':
+                    createBackButton()
+                    break;
+                case 'search':
+                    createBackButton2()
+                    break;
+                default:
+                    break;
+            }
         })
         .catch((error) => {
             console.error(error)
         })
+
+
+
 };
+
+
+function createBackButton() {
+    let backButton = document.createElement('button')
+    backButton.innerHTML = "Tilbage"
+    myApp.prepend(backButton)
+    backButton.addEventListener('click', () => {
+        switchPage()
+    })
+};
+
+
+
+
 
 let myBar = document.getElementById('myBar')
 let showAllButton = document.getElementById('showAllButton')
 
 showAllButton.addEventListener('click', () => {
     loadingScreen()
-    fetch("https://api.disneyapi.dev/characters?page=1")
+    fetch(`https://api.disneyapi.dev/characters?page=${myPage}`)
         .then((response) => { return response.json() })
         .then((data) => {
             myApp.innerHTML = ''
+            console.log(data);
+
+
 
             data.data.map((character) => {
-                myApp.innerHTML += `<figure class="characterFigure"><h2>${character.name}</h2><img src="${character.imageUrl}"></figure>`
+                let characterFigure = document.createElement('figure')
+                characterFigure.innerHTML = `<h2>${character.name}</h2><img src="${character.imageUrl}">`
+                myApp.appendChild(characterFigure)
+
+                characterFigure.addEventListener('click', () => {
+                    showCharacterPage(character._id, 'showAll')
+                })
             })
 
-            let myPage = 1
+
+
+
 
             if (myBar.childElementCount > 1) {
                 return
             } else {
                 setupNavButtons(myPage)
             }
-
-
-
         })
         .catch((error) => {
             console.error(error)
         })
 })
+
+
+
+
 
 
 
@@ -68,6 +118,7 @@ function setupNavButtons(pageNumber) {
         } else {
             pageNumber--
             switchPage(pageNumber)
+            console.log(pageNumber);
         }
     })
 
@@ -79,6 +130,8 @@ function setupNavButtons(pageNumber) {
         } else {
             pageNumber++
             switchPage(pageNumber)
+            console.log(pageNumber);
+
 
         }
     })
@@ -95,9 +148,14 @@ function switchPage(pageNumber) {
             myApp.innerHTML = ''
 
             data.data.map((character) => {
-                myApp.innerHTML += `<h2>${character.name}</h2><img src="${character.imageUrl}">`
-            })
+                let characterFigure = document.createElement('figure')
+                characterFigure.innerHTML = `<h2>${character.name}</h2><img src="${character.imageUrl}">`
+                myApp.appendChild(characterFigure)
 
+                characterFigure.addEventListener('click', () => {
+                    showCharacterPage(character._id, 'showAll')
+                })
+            })
 
         })
         .catch((error) => {
@@ -113,16 +171,16 @@ let mySearchButton = document.getElementById('mySearchButton')
 mySearchButton.addEventListener('click', () => {
     console.log(mySearchElement.value);
     fetch(`https://api.disneyapi.dev/character?name=${mySearchElement.value}`)
-    .then((response) => { return response.json() })
-    .then((data) => {
-        myApp.innerHTML = ''
-        data.data.map((character) => {
-            myApp.innerHTML += `<h2>${character.name}</h2><img src="${character.imageUrl}">`
+        .then((response) => { return response.json() })
+        .then((data) => {
+            myApp.innerHTML = ''
+            data.data.map((character) => {
+                myApp.innerHTML += `<figure class="characterFigure" id="${character._id}"><h2>${character.name}</h2><img src="${character.imageUrl}"></figure>`
+            })
         })
-    })
-    .catch((error) => {
-        console.error(error)
-    })
+        .catch((error) => {
+            console.error(error)
+        })
 })
 
 
